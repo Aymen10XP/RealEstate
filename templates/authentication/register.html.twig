@@ -1,0 +1,40 @@
+<html>
+<head>
+    <title>Register</title>
+
+</head>
+<body>
+
+
+
+
+
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Register</h4>
+                </div>
+                <div class="card-body">
+                    {{ form_start(registrationForm) }}
+                    {{ form_row(registrationForm.firstName) }}
+                    {{ form_row(registrationForm.lastName) }}
+                    {{ form_row(registrationForm.email) }}
+                    {{ form_row(registrationForm.phone) }}
+                    {{ form_row(registrationForm.plainPassword) }}
+
+                    <button class="btn btn-primary w-100" type="submit">Register</button>
+                    {{ form_end(registrationForm) }}
+
+                    <div class="text-center mt-3">
+                        <a href="{{ path('app_login') }}">Already have an account? Login here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+</html>
