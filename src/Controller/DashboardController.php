@@ -11,8 +11,14 @@ class DashboardController extends AbstractController
     #[Route('/dashboard', name: 'app_dashboard')]
     public function index(): Response
     {
+        // If no user is logged in, redirect to login
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('app_login');
+        }
+
         $user = $this->getUser();
 
+        // Redirect based on user role
         if (in_array('ROLE_ADMIN', $user->getRoles())) {
             return $this->redirectToRoute('admin_dashboard');
         } elseif (in_array('ROLE_MANAGER', $user->getRoles())) {
@@ -23,6 +29,7 @@ class DashboardController extends AbstractController
             return $this->redirectToRoute('tenant_dashboard');
         }
 
+        // Default fallback
         return $this->redirectToRoute('app_login');
     }
 
@@ -31,7 +38,9 @@ class DashboardController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        return $this->render('dashboard/admin.html.twig');
+        return $this->render('dashboard/admin.html.twig', [
+            'user' => $this->getUser()
+        ]);
     }
 
     #[Route('/manager/dashboard', name: 'manager_dashboard')]
@@ -39,7 +48,9 @@ class DashboardController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_MANAGER');
 
-        return $this->render('dashboard/manager.html.twig');
+        return $this->render('dashboard/manager.html.twig', [
+            'user' => $this->getUser()
+        ]);
     }
 
     #[Route('/owner/dashboard', name: 'owner_dashboard')]
@@ -47,7 +58,9 @@ class DashboardController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_OWNER');
 
-        return $this->render('dashboard/owner.html.twig');
+        return $this->render('dashboard/owner.html.twig', [
+            'user' => $this->getUser()
+        ]);
     }
 
     #[Route('/tenant/dashboard', name: 'tenant_dashboard')]
@@ -55,6 +68,8 @@ class DashboardController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_TENANT');
 
-        return $this->render('dashboard/tenant.html.twig');
+        return $this->render('dashboard/tenant.html.twig', [
+            'user' => $this->getUser()
+        ]);
     }
 }
