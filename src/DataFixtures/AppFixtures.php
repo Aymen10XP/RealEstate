@@ -3,6 +3,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Payment;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
@@ -17,7 +18,7 @@ class AppFixtures extends Fixture
         $this->passwordHasher = $passwordHasher;
     }
 
-    public function load(ObjectManager $manager): void
+    public function load(ObjectManager $manager, $property1, $lease1): void
     {
         // Create Admin user
         $admin = new User();
@@ -60,5 +61,23 @@ class AppFixtures extends Fixture
         $manager->persist($tenant);
 
         $manager->flush();
+
+        // Create maintenance requests
+        $maintenanceRequest = new MaintenanceRequest();
+        $maintenanceRequest->setProperty($property1); // assuming you have properties
+        $maintenanceRequest->setTenant($tenant);
+        $maintenanceRequest->setTitle('Leaky faucet in kitchen');
+        $maintenanceRequest->setDescription('The kitchen faucet has been dripping constantly for the past week.');
+        $maintenanceRequest->setPriority('medium');
+        $maintenanceRequest->setStatus('submitted');
+        $manager->persist($maintenanceRequest);
+
+// Create payments
+        $payment = new Payment();
+        $payment->setLease($lease1); // assuming you have leases
+        $payment->setAmount('1500.00');
+        $payment->setDueDate(new \DateTime('first day of next month'));
+        $payment->setStatus('pending');
+        $manager->persist($payment);
     }
 }

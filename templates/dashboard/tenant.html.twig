@@ -1,0 +1,20 @@
+{# templates/dashboard/tenant.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Tenant Dashboard{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h1>Tenant Dashboard</h1>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Welcome, {{ user.firstName }}!</h5>
+                        <p class="card-text">You can view your lease, pay rent, and submit maintenance requests.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

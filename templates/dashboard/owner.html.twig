@@ -1,0 +1,20 @@
+{# templates/dashboard/owner.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Owner Dashboard{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h1>Owner Dashboard</h1>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Welcome, {{ user.firstName }}!</h5>
+                        <p class="card-text">You can view your properties and financial reports.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

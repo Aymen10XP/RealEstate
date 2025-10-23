@@ -1,4 +1,5 @@
 <?php
+// src/Entity/User.php
 
 namespace App\Entity;
 
@@ -41,13 +42,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'tenant', targetEntity: Lease::class)]
     private Collection $leases;
 
+    #[ORM\OneToMany(mappedBy: 'tenant', targetEntity: MaintenanceRequest::class)]
+    private Collection $maintenanceRequests;
+
+    #[ORM\OneToMany(mappedBy: 'assignedTo', targetEntity: MaintenanceRequest::class)]
+    private Collection $assignedMaintenanceRequests;
+
     public function __construct()
     {
         $this->properties = new ArrayCollection();
         $this->leases = new ArrayCollection();
+        $this->maintenanceRequests = new ArrayCollection();
+        $this->assignedMaintenanceRequests = new ArrayCollection();
     }
 
-    // Getters and setters...
     public function getId(): ?int
     {
         return $this->id;
@@ -64,15 +72,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
     }
 
+    /**
+     * @see UserInterface
+     */
     public function getRoles(): array
     {
         $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
+
         return array_unique($roles);
     }
 
@@ -82,6 +100,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @see PasswordAuthenticatedUserInterface
+     */
     public function getPassword(): string
     {
         return $this->password;
@@ -93,9 +114,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @see UserInterface
+     */
     public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
     }
 
     public function getFirstName(): ?string
@@ -139,11 +164,126 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->properties;
     }
 
+    public function addProperty(Property $property): static
+    {
+        if (!$this->properties->contains($property)) {
+            $this->properties->add($property);
+            $property->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProperty(Property $property): static
+    {
+        if ($this->properties->removeElement($property)) {
+            // set the owning side to null (unless already changed)
+            if ($property->getOwner() === $this) {
+                $property->setOwner(null);
+            }
+        }
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, Lease>
      */
     public function getLeases(): Collection
     {
         return $this->leases;
+    }
+
+    public function addLease(Lease $lease): static
+    {
+        if (!$this->leases->contains($lease)) {
+            $this->leases->add($lease);
+            $lease->setTenant($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLease(Lease $lease): static
+    {
+        if ($this->leases->removeElement($lease)) {
+            // set the owning side to null (unless already changed)
+            if ($lease->getTenant() === $this) {
+                $lease->setTenant(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MaintenanceRequest>
+     */
+    public function getMaintenanceRequests(): Collection
+    {
+        return $this->maintenanceRequests;
+    }
+
+    public function addMaintenanceRequest(MaintenanceRequest $maintenanceRequest): static
+    {
+        if (!$this->maintenanceRequests->contains($maintenanceRequest)) {
+            $this->maintenanceRequests->add($maintenanceRequest);
+            $maintenanceRequest->setTenant($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMaintenanceRequest(MaintenanceRequest $maintenanceRequest): static
+    {
+        if ($this->maintenanceRequests->removeElement($maintenanceRequest)) {
+            // set the owning side to null (unless already changed)
+            if ($maintenanceRequest->getTenant() === $this) {
+                $maintenanceRequest->setTenant(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MaintenanceRequest>
+     */
+    public function getAssignedMaintenanceRequests(): Collection
+    {
+        return $this->assignedMaintenanceRequests;
+    }
+
+    public function addAssignedMaintenanceRequest(MaintenanceRequest $assignedMaintenanceRequest): static
+    {
+        if (!$this->assignedMaintenanceRequests->contains($assignedMaintenanceRequest)) {
+            $this->assignedMaintenanceRequests->add($assignedMaintenanceRequest);
+            $assignedMaintenanceRequest->setAssignedTo($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAssignedMaintenanceRequest(MaintenanceRequest $assignedMaintenanceRequest): static
+    {
+        if ($this->assignedMaintenanceRequests->removeElement($assignedMaintenanceRequest)) {
+            // set the owning side to null (unless already changed)
+            if ($assignedMaintenanceRequest->getAssignedTo() === $this) {
+                $assignedMaintenanceRequest->setAssignedTo(null);
+            }
+        }
+
+        return $this;
+    }
+
+    // For Symfony 4.4 compatibility
+    public function getUsername(): string
+    {
+        return $this->getUserIdentifier();
+    }
+
+    public function __toString(): string
+    {
+        return $this->firstName . ' ' . $this->lastName . ' (' . $this->email . ')';
     }
 }
