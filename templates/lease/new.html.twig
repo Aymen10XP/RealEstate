@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Add Tenant to Property{% endblock %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-user-plus"></i> Add Tenant to Property
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> Property Information</h6>
+                        <p class="mb-1"><strong>Address:</strong> {{ property.address }}</p>
+                        <p class="mb-1"><strong>Monthly Rent:</strong> ${{ property.monthlyRent }}</p>
+                    </div>
+
+                    {{ form_start(form) }}
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.tenant) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.monthlyRent) }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.startDate) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.endDate) }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.securityDeposit) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.status) }}
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Add Tenant
+                        </button>
+                        <a href="{{ path('app_property_show', {'id': property.id}) }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Property
+                        </a>
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

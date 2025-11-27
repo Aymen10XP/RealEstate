@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Pay Rent{% endblock %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-credit-card"></i> Pay Rent
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>Property Information</h6>
+                            <p class="mb-1"><strong>Address:</strong> {{ activeLease.property.address }}</p>
+                            <p class="mb-1"><strong>City:</strong> {{ activeLease.property.city }}, {{ activeLease.property.state }}</p>
+                            <p class="mb-1"><strong>Lease Period:</strong> {{ activeLease.startDate|date('M d, Y') }} - {{ activeLease.endDate|date('M d, Y') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Payment Summary</h6>
+                            <p class="mb-1"><strong>Monthly Rent:</strong> ${{ activeLease.monthlyRent }}</p>
+                            <p class="mb-1"><strong>Due Date:</strong> {{ rentPayment.dueDate|date('F d, Y') }}</p>
+                            <p class="h5 text-success"><strong>Amount Due: ${{ rentPayment.amount }}</strong></p>
+                        </div>
+                    </div>
+
+                    {{ form_start(form) }}
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.amount) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.paymentMethod) }}
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-3">
+                        <h6><i class="fas fa-info-circle"></i> Payment Information</h6>
+                        <p class="mb-0">This is a simulated payment system. In a real application, this would integrate with payment processors like Stripe or PayPal.</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-lock"></i> Submit Payment
+                        </button>
+                        <a href="{{ path('app_dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

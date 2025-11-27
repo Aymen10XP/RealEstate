@@ -1,0 +1,103 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Maintenance Request Details{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i class="fas fa-tools"></i> Maintenance Request Details
+                </h1>
+                <div>
+                    <a href="{{ path('app_maintenance_request_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+
+                    {% if is_granted('ROLE_MANAGER') and maintenance_request.status != 'completed' and maintenance_request.status != 'cancelled' %}
+                        <form action="{{ path('app_maintenance_request_done', {'id': maintenance_request.id}) }}" method="post" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('done' ~ maintenance_request.id) }}">
+                            <button type="submit" class="btn btn-success"
+                                    onclick="return confirm('Mark this maintenance request as completed? The tenant will be notified.')">
+                                <i class="fas fa-check"></i> Mark as Done
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    {% if is_granted('ROLE_TENANT') and maintenance_request.tenant == app.user %}
+                        <a href="{{ path('app_maintenance_request_edit', {'id': maintenance_request.id}) }}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h3>{{ maintenance_request.title }}</h3>
+
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>Request Details</h6>
+                                    <ul class="list-unstyled">
+                                        <li><strong>Priority:</strong>
+                                            <span class="badge bg-{{ maintenance_request.priority == 'emergency' ? 'danger' : (maintenance_request.priority == 'high' ? 'warning' : (maintenance_request.priority == 'medium' ? 'info' : 'secondary')) }}">
+                                            {{ maintenance_request.priority|title }}
+                                        </span>
+                                        </li>
+                                        <li><strong>Status:</strong>
+                                            <span class="badge bg-{{ maintenance_request.status == 'completed' ? 'success' : (maintenance_request.status == 'in_progress' ? 'primary' : (maintenance_request.status == 'cancelled' ? 'danger' : 'secondary')) }}">
+                                            {{ maintenance_request.status|replace({'_': ' '})|title }}
+                                        </span>
+                                        </li>
+                                        <li><strong>Created:</strong> {{ maintenance_request.createdAt|date('F j, Y g:i A') }}</li>
+                                        {% if maintenance_request.completedAt %}
+                                            <li><strong>Completed:</strong> {{ maintenance_request.completedAt|date('F j, Y g:i A') }}</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Property & Contact</h6>
+                                    <ul class="list-unstyled">
+                                        <li><strong>Property:</strong> {{ maintenance_request.property.address }}</li>
+                                        <li><strong>Submitted By:</strong> {{ maintenance_request.tenant.getFullName() }}</li>
+                                        <li><strong>Tenant Email:</strong> {{ maintenance_request.tenant.email }}</li>
+                                        <li><strong>Tenant Phone:</strong> {{ maintenance_request.tenant.phone }}</li>
+                                        {% if maintenance_request.assignedManager %}
+                                            <li><strong>Assigned Manager:</strong> {{ maintenance_request.assignedManager.getFullName() }}</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <h6>Description</h6>
+                                <div class="card">
+                                    <div class="card-body">
+                                        {{ maintenance_request.description|nl2br }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Completion Notification for Tenants -->
+            {% if is_granted('ROLE_TENANT') and maintenance_request.tenant == app.user and maintenance_request.status == 'completed' %}
+                <div class="alert alert-success mt-4">
+                    <h5><i class="fas fa-check-circle"></i> Request Completed</h5>
+                    <p class="mb-0">
+                        Your maintenance request has been completed by the property manager on
+                        {{ maintenance_request.completedAt|date('F j, Y') }}.
+                        {% if maintenance_request.assignedManager %}
+                            It was handled by {{ maintenance_request.assignedManager.getFullName() }}.
+                        {% endif %}
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

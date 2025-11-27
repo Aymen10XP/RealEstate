@@ -3,14 +3,14 @@
 namespace App\Form;
 
 use App\Entity\Lease;
+use App\Entity\Tenant;
 use App\Entity\Property;
-use App\Entity\User;
+use App\Repository\TenantRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Form\Extension\Core\Type\MoneyType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -18,46 +18,41 @@ class LeaseType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $property = $options['property'];
+
         $builder
-            ->add('property', EntityType::class, [
-                'class' => Property::class,
-                'choice_label' => function(Property $property) {
-                    return $property->getAddress() . ' - ' . $property->getCity();
-                },
-                'placeholder' => 'Select a property',
-                'attr' => ['class' => 'form-select'],
-            ])
             ->add('tenant', EntityType::class, [
-                'class' => User::class,
-                'choice_label' => function(User $user) {
-                    return $user->getFirstName() . ' ' . $user->getLastName() . ' (' . $user->getEmail() . ')';
+                'class' => Tenant::class,
+                'choice_label' => function (Tenant $tenant) {
+                    return $tenant->getFullName() . ' (' . $tenant->getEmail() . ')';
                 },
-                'query_builder' => function ($repository) {
-                    return $repository->createQueryBuilder('u')
-                        ->andWhere('JSON_CONTAINS(u.roles, :role) = 1')
-                        ->setParameter('role', '"ROLE_TENANT"');
+                'attr' => ['class' => 'form-control'],
+                'label' => 'Select Tenant',
+                'placeholder' => 'Choose a tenant',
+                'query_builder' => function (TenantRepository $repository) {
+                    return $repository->createQueryBuilder('t')
+                        ->orderBy('t.firstName', 'ASC');
                 },
-                'placeholder' => 'Select a tenant',
-                'attr' => ['class' => 'form-select'],
             ])
             ->add('startDate', DateType::class, [
                 'widget' => 'single_text',
                 'attr' => ['class' => 'form-control'],
+                'label' => 'Lease Start Date'
             ])
             ->add('endDate', DateType::class, [
                 'widget' => 'single_text',
                 'attr' => ['class' => 'form-control'],
+                'label' => 'Lease End Date'
             ])
-            ->add('monthlyRent', MoneyType::class, [
-                'currency' => 'USD',
+            ->add('monthlyRent', NumberType::class, [
                 'attr' => ['class' => 'form-control'],
-                'help' => 'Monthly rental amount',
+                'label' => 'Monthly Rent',
+                'data' => $property ? $property->getMonthlyRent() : null
             ])
-            ->add('securityDeposit', MoneyType::class, [
-                'currency' => 'USD',
-                'required' => false,
+            ->add('securityDeposit', NumberType::class, [
                 'attr' => ['class' => 'form-control'],
-                'help' => 'Security deposit amount (optional)',
+                'label' => 'Security Deposit',
+                'required' => false
             ])
             ->add('status', ChoiceType::class, [
                 'choices' => [
@@ -65,15 +60,8 @@ class LeaseType extends AbstractType
                     'Expired' => 'expired',
                     'Terminated' => 'terminated',
                 ],
-                'attr' => ['class' => 'form-select'],
-            ])
-            ->add('terms', TextareaType::class, [
-                'required' => false,
-                'attr' => [
-                    'class' => 'form-control',
-                    'rows' => 5,
-                    'placeholder' => 'Enter lease terms and conditions...'
-                ],
+                'attr' => ['class' => 'form-control'],
+                'label' => 'Lease Status'
             ])
         ;
     }
@@ -82,6 +70,9 @@ class LeaseType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Lease::class,
+            'property' => null,
         ]);
+
+        $resolver->setAllowedTypes('property', ['null', Property::class]);
     }
 }

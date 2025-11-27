@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Properties{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-home"></i> Properties
+        </h1>
+        {% if is_granted('ROLE_MANAGER') %}
+            <a href="{{ path('app_property_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Property
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        {% for property in properties %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ property.address }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{ property.city }}, {{ property.state }}</h6>
+                        <p class="card-text">
+                            <strong>Rent:</strong> ${{ property.monthlyRent }}/month<br>
+                            <strong>Bed/Bath:</strong> {{ property.bedrooms }}/{{ property.bathrooms }}<br>
+                            <strong>Square Feet:</strong> {{ property.squareFeet }}<br>
+                            <strong>Status:</strong>
+                            <span class="badge bg-{{ property.status == 'available' ? 'success' : (property.status == 'occupied' ? 'primary' : 'warning') }}">
+                            {{ property.status|title }}
+                        </span>
+                        </p>
+                        {% if property.description %}
+                            <p class="card-text">{{ property.description|slice(0, 100) }}...</p>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <div class="btn-group w-100">
+                            <a href="{{ path('app_property_show', {'id': property.id}) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                            {% if is_granted('ROLE_MANAGER') %}
+                                <a href="{{ path('app_property_edit', {'id': property.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h4 class="alert-heading">No Properties Found</h4>
+                    <p class="mb-0">
+                        {% if is_granted('ROLE_MANAGER') %}
+                            You haven't added any properties yet.
+                            <a href="{{ path('app_property_new') }}" class="alert-link">Add your first property</a>.
+                        {% else %}
+                            No properties are currently assigned to you.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

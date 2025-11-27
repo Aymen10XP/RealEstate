@@ -46,13 +46,35 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * Find users by role
+     * Find all users by type
      */
-    public function findByRole(string $role): array
+    public function findByType(string $type): array
     {
         return $this->createQueryBuilder('u')
-            ->andWhere('u.roles LIKE :role')
-            ->setParameter('role', '%"'.$role.'"%')
+            ->andWhere('u INSTANCE OF :type')
+            ->setParameter('type', $type)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find all managers
+     */
+    public function findAllManagers(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u INSTANCE OF App\Entity\Manager')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Find all owners
+     */
+    public function findAllOwners(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u INSTANCE OF App\Entity\Owner')
             ->getQuery()
             ->getResult();
     }
@@ -60,57 +82,49 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     /**
      * Find all tenants
      */
-    public function findTenants(): array
+    public function findAllTenants(): array
     {
-        return $this->findByRole('ROLE_TENANT');
+        return $this->createQueryBuilder('u')
+            ->andWhere('u INSTANCE OF App\Entity\Tenant')
+            ->getQuery()
+            ->getResult();
     }
 
     /**
-     * Find all owners
+     * Search users by name or email
      */
-    public function findOwners(): array
+    public function search(string $query): array
     {
-        return $this->findByRole('ROLE_OWNER');
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.firstName LIKE :query OR u.lastName LIKE :query OR u.email LIKE :query')
+            ->setParameter('query', '%' . $query . '%')
+            ->getQuery()
+            ->getResult();
     }
 
     /**
-     * Find all managers
+     * Count users by type
      */
-    public function findManagers(): array
+    public function countByType(string $type): int
     {
-        return $this->findByRole('ROLE_MANAGER');
+        return $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->andWhere('u INSTANCE OF :type')
+            ->setParameter('type', $type)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     /**
-     * Find all admins
+     * Get user statistics
      */
-    public function findAdmins(): array
+    public function getUserStatistics(): array
     {
-        return $this->findByRole('ROLE_ADMIN');
+        return [
+            'managers' => $this->countByType('App\Entity\Manager'),
+            'owners' => $this->countByType('App\Entity\Owner'),
+            'tenants' => $this->countByType('App\Entity\Tenant'),
+            'total' => $this->count([]),
+        ];
     }
-
-    //    /**
-    //     * @return User[] Returns an array of User objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?User
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }

@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Welcome - Real Estate Manager{% endblock %}
+
+{% block body %}
+    <div class="jumbotron bg-light p-5 rounded">
+        <div class="container">
+            <h1 class="display-4">Real Estate Management System</h1>
+            <p class="lead">Manage your properties, tenants, and maintenance requests all in one place.</p>
+            <hr class="my-4">
+            <p>Choose your role to get started:</p>
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-user-tie fa-3x text-primary mb-3"></i>
+                            <h5 class="card-title">Manager</h5>
+                            <p class="card-text">Manage properties, tenants, and maintenance requests.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-user-check fa-3x text-success mb-3"></i>
+                            <h5 class="card-title">Owner</h5>
+                            <p class="card-text">View your properties and financial reports.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-user fa-3x text-info mb-3"></i>
+                            <h5 class="card-title">Tenant</h5>
+                            <p class="card-text">View lease, pay rent, submit maintenance requests.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <a href="{{ path('app_register') }}" class="btn btn-primary btn-lg me-3">
+                    <i class="fas fa-user-plus"></i> Get Started
+                </a>
+                <a href="{{ path('app_login') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

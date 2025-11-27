@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Add New Property{% endblock %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-plus"></i> Add New Property
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form) }}
+                    <div class="row">
+                        <div class="col-md-12">
+                            {{ form_row(form.address) }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            {{ form_row(form.city) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.state) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.zipCode) }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            {{ form_row(form.monthlyRent) }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form_row(form.bedrooms) }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form_row(form.bathrooms) }}
+                        </div>
+                        <div class="col-md-3">
+                            {{ form_row(form.squareFeet) }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.status) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.manager) }}
+                        </div>
+                    </div>
+
+                    {{ form_row(form.description) }}
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save"></i> Create Property
+                        </button>
+                        <a href="{{ path('app_dashboard') }}" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Property Details{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i class="fas fa-home"></i> Property Details
+                </h1>
+                <div>
+                    <a href="{{ path('app_property_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                    {% if is_granted('ROLE_MANAGER') and property.manager == app.user %}
+                        <a href="{{ path('app_property_edit', {'id': property.id}) }}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Edit Property
+                        </a>
+                        <a href="{{ path('app_lease_new', {'id': property.id}) }}" class="btn btn-success">
+                            <i class="fas fa-user-plus"></i> Add Tenant
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h3>{{ property.address }}</h3>
+                            <h5 class="text-muted">{{ property.city }}, {{ property.state }} {{ property.zipCode }}</h5>
+
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <h6>Property Details</h6>
+                                    <ul class="list-unstyled">
+                                        <li><strong>Monthly Rent:</strong> ${{ property.monthlyRent }}</li>
+                                        <li><strong>Bedrooms:</strong> {{ property.bedrooms }}</li>
+                                        <li><strong>Bathrooms:</strong> {{ property.bathrooms }}</li>
+                                        <li><strong>Square Feet:</strong> {{ property.squareFeet }}</li>
+                                        <li>
+                                            <strong>Status:</strong>
+                                            <span class="badge bg-{{ property.status == 'available' ? 'success' : (property.status == 'occupied' ? 'primary' : 'warning') }}">
+                                            {{ property.status|title }}
+                                        </span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Ownership</h6>
+                                    <ul class="list-unstyled">
+                                        <li><strong>Owner:</strong> {{ property.owner.getFullName() }}</li>
+                                        <li><strong>Owner Email:</strong> {{ property.owner.email }}</li>
+                                        <li><strong>Owner Phone:</strong> {{ property.owner.phone }}</li>
+                                        {% if property.manager %}
+                                            <li><strong>Manager:</strong> {{ property.manager.getFullName() }}</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {% if property.description %}
+                                <div class="mt-4">
+                                    <h6>Description</h6>
+                                    <p>{{ property.description }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Tenants Section -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users"></i> Current Tenants
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if property.leases|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Tenant Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Lease Period</th>
+                                    <th>Monthly Rent</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for lease in property.leases %}
+                                    <tr>
+                                        <td>{{ lease.tenant.getFullName() }}</td>
+                                        <td>{{ lease.tenant.email }}</td>
+                                        <td>{{ lease.tenant.phone }}</td>
+                                        <td>{{ lease.startDate|date('M d, Y') }} - {{ lease.endDate|date('M d, Y') }}</td>
+                                        <td>${{ lease.monthlyRent }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ lease.status == 'active' ? 'success' : (lease.status == 'expired' ? 'warning' : 'danger') }}">
+                                                {{ lease.status|title }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if is_granted('ROLE_MANAGER') and property.manager == app.user %}
+                                                <div class="btn-group">
+                                                    <a href="{{ path('app_lease_edit', {'id': lease.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <form action="{{ path('app_lease_delete', {'id': lease.id}) }}" method="post" style="display: inline;">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ lease.id) }}">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to remove this tenant?')">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5>No Tenants Assigned</h5>
+                            <p class="text-muted">This property doesn't have any tenants yet.</p>
+                            {% if is_granted('ROLE_MANAGER') and property.manager == app.user %}
+                                <a href="{{ path('app_lease_new', {'id': property.id}) }}" class="btn btn-primary">
+                                    <i class="fas fa-user-plus"></i> Add First Tenant
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -6,9 +6,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class HomepageController extends AbstractController
+class HomeController extends AbstractController
 {
-    #[Route('/', name: 'app_homepage')]
+    #[Route('/', name: 'app_home')]
     public function index(): Response
     {
         // If user is logged in, redirect to dashboard
@@ -16,7 +16,6 @@ class HomepageController extends AbstractController
             return $this->redirectToRoute('app_dashboard');
         }
 
-        // If not logged in, redirect to login
-        return $this->redirectToRoute('app_login');
+        return $this->render('home/index.html.twig');
     }
 }

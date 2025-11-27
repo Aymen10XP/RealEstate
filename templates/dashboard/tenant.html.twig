@@ -1,18 +1,233 @@
-{# templates/dashboard/tenant.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Tenant Dashboard{% endblock %}
 
 {% block body %}
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <h1>Tenant Dashboard</h1>
+    <div class="row">
+        <div class="col-12">
+            <h1><i class="fas fa-tachometer-alt"></i> Tenant Dashboard</h1>
+            <p class="lead">Welcome back, {{ app.user.firstName }}!</p>
+        </div>
+    </div>
+
+    {% set currentProperty = app.user.currentProperty %}
+    {% set activeLease = app.user.activeLease %}
+    {% set currentRent = activeLease ? activeLease.monthlyRent : 0 %}
+
+    <!-- Current Property & Rent Information -->
+    {% if currentProperty %}
+        <div class="row mt-4">
+            <div class="col-md-8">
                 <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Welcome, {{ user.firstName }}!</h5>
-                        <p class="card-text">You can view your lease, pay rent, and submit maintenance requests.</p>
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-home"></i> My Current Property
+                        </h5>
                     </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h4>{{ currentProperty.address }}</h4>
+                                <p class="text-muted">{{ currentProperty.city }}, {{ currentProperty.state }} {{ currentProperty.zipCode }}</p>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-4">
+                                        <strong>Monthly Rent:</strong><br>
+                                        <span class="h5 text-primary">${{ currentRent }}</span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>Bed/Bath:</strong><br>
+                                        <span class="h5">{{ currentProperty.bedrooms }}/{{ currentProperty.bathrooms }}</span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>Meters:</strong><br>
+                                        <span class="h5">{{ currentProperty.squareFeet }}</span>
+                                    </div>
+                                </div>
+
+                                {% if activeLease %}
+                                    <div class="mt-3">
+                                        <strong>Lease Period:</strong><br>
+                                        {{ activeLease.startDate|date('M d, Y') }} to {{ activeLease.endDate|date('M d, Y') }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="d-grid gap-2">
+                                    <a href="{{ path('app_rent_payment_pay') }}" class="btn btn-success btn-lg">
+                                        <i class="fas fa-money-bill-wave"></i> Pay Rent
+                                    </a>
+                                    <a href="{{ path('app_rent_payment_history') }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-history"></i> Payment History
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <i class="fas fa-calendar-check fa-3x text-success mb-3"></i>
+                        <h5>Rent Due</h5>
+                        <p class="h4">${{ currentRent }}</p>
+                        <p class="text-muted">Due by {{ "first day of next month"|date('M d, Y') }}</p>
+                        <a href="{{ path('app_rent_payment_pay') }}" class="btn btn-success">
+                            <i class="fas fa-credit-card"></i> Pay Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    <h4 class="alert-heading">No Active Lease</h4>
+                    <p class="mb-0">You don't have an active lease assigned. Please contact your property manager.</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ maintenance_requests|length }}</h4>
+                            <p>Maintenance Requests</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-tools fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ rent_payments|filter(p => p.status == 'paid')|length }}</h4>
+                            <p>Paid Payments</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ rent_payments|filter(p => p.status == 'pending')|length }}</h4>
+                            <p>Pending Payments</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ rent_payments|filter(p => p.isOverdue())|length }}</h4>
+                            <p>Overdue Payments</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tools"></i> Recent Maintenance Requests
+                        <a href="{{ path('app_maintenance_request_new') }}" class="btn btn-sm btn-primary float-end">
+                            <i class="fas fa-plus"></i> New Request
+                        </a>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if maintenance_requests %}
+                        <div class="list-group">
+                            {% for request in maintenance_requests %}
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ request.title }}</h6>
+                                        <span class="badge bg-{{ request.priority == 'emergency' ? 'danger' : (request.priority == 'high' ? 'warning' : 'info') }}">
+                                        {{ request.priority|title }}
+                                    </span>
+                                    </div>
+                                    <p class="mb-1">{{ request.description|slice(0, 100) }}{% if request.description|length > 100 %}...{% endif %}</p>
+                                    <small class="text-muted">
+                                        Status: {{ request.status|replace({'_': ' '})|title }} |
+                                        Created: {{ request.createdAt|date('M d, Y') }}
+                                    </small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No maintenance requests submitted yet.</p>
+                        <a href="{{ path('app_maintenance_request_new') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> Submit Your First Request
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-money-bill-wave"></i> Recent Rent Payments
+                        <a href="{{ path('app_rent_payment_history') }}" class="btn btn-sm btn-primary float-end">
+                            <i class="fas fa-list"></i> View All
+                        </a>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if rent_payments %}
+                        <div class="list-group">
+                            {% for payment in rent_payments %}
+                                <div class="list-group-item">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">${{ payment.amount }}</h6>
+                                        <span class="badge bg-{{ payment.status == 'paid' ? 'success' : (payment.status == 'pending' ? 'warning' : 'danger') }}">
+                                        {{ payment.status|title }}
+                                    </span>
+                                    </div>
+                                    <p class="mb-1">Due: {{ payment.dueDate|date('M d, Y') }}</p>
+                                    {% if payment.paidDate %}
+                                        <small class="text-muted">Paid: {{ payment.paidDate|date('M d, Y') }}</small>
+                                    {% endif %}
+                                    {% if payment.isOverdue() %}
+                                        <small class="text-danger"><i class="fas fa-exclamation-circle"></i> Overdue</small>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No rent payments found.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Manage Tenants{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-users"></i> Manage Tenants
+        </h1>
+        <a href="{{ path('app_tenant_new') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Tenant
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            {% if tenants %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Active Leases</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for tenant in tenants %}
+                            <tr>
+                                <td>{{ tenant.firstName }} {{ tenant.lastName }}</td>
+                                <td>{{ tenant.email }}</td>
+                                <td>{{ tenant.phone }}</td>
+                                <td>
+                                    <span class="badge bg-primary">{{ tenant.leases|filter(lease => lease.isActive())|length }}</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ path('app_tenant_show', {'id': tenant.id}) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ path('app_tenant_edit', {'id': tenant.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <h4 class="alert-heading">No Tenants Found</h4>
+                    <p class="mb-0">
+                        You haven't added any tenants yet.
+                        <a href="{{ path('app_tenant_new') }}" class="alert-link">Add your first tenant</a>.
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

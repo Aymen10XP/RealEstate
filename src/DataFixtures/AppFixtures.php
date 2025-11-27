@@ -1,10 +1,12 @@
 <?php
 
-
 namespace App\DataFixtures;
 
-use App\Entity\Payment;
-use App\Entity\User;
+use App\Entity\Manager;
+use App\Entity\Owner;
+use App\Entity\Tenant;
+use App\Entity\Property;
+use App\Entity\Lease;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -18,66 +20,78 @@ class AppFixtures extends Fixture
         $this->passwordHasher = $passwordHasher;
     }
 
-    public function load(ObjectManager $manager, $property1, $lease1): void
+    public function load(ObjectManager $manager): void
     {
-        // Create Admin user
-        $admin = new User();
-        $admin->setEmail('admin@realestate.com');
-        $admin->setFirstName('Admin');
-        $admin->setLastName('User');
-        $admin->setPhone('123-456-7890');
-        $admin->setRoles(['ROLE_ADMIN']);
-        $admin->setPassword($this->passwordHasher->hashPassword($admin, 'admin123'));
-        $manager->persist($admin);
-
-        // Create Manager user
-        $managerUser = new User();
-        $managerUser->setEmail('manager@realestate.com');
-        $managerUser->setFirstName('Manager');
-        $managerUser->setLastName('User');
-        $managerUser->setPhone('123-456-7891');
-        $managerUser->setRoles(['ROLE_MANAGER']);
-        $managerUser->setPassword($this->passwordHasher->hashPassword($managerUser, 'manager123'));
+        // Create Manager
+        $managerUser = new Manager();
+        $managerUser->setEmail('manager@example.com');
+        $managerUser->setFirstName('John');
+        $managerUser->setLastName('Manager');
+        $managerUser->setPhone('555-0101');
+        $managerUser->setPassword($this->passwordHasher->hashPassword($managerUser, 'password'));
         $manager->persist($managerUser);
 
-        // Create Owner user
-        $owner = new User();
-        $owner->setEmail('owner@realestate.com');
-        $owner->setFirstName('Property');
-        $owner->setLastName('Owner');
-        $owner->setPhone('123-456-7892');
-        $owner->setRoles(['ROLE_OWNER']);
-        $owner->setPassword($this->passwordHasher->hashPassword($owner, 'owner123'));
-        $manager->persist($owner);
+        // Create Owner
+        $ownerUser = new Owner();
+        $ownerUser->setEmail('owner@example.com');
+        $ownerUser->setFirstName('Sarah');
+        $ownerUser->setLastName('Owner');
+        $ownerUser->setPhone('555-0102');
+        $ownerUser->setPassword($this->passwordHasher->hashPassword($ownerUser, 'password'));
+        $manager->persist($ownerUser);
 
-        // Create Tenant user
-        $tenant = new User();
-        $tenant->setEmail('tenant@realestate.com');
-        $tenant->setFirstName('John');
-        $tenant->setLastName('Tenant');
-        $tenant->setPhone('123-456-7893');
-        $tenant->setRoles(['ROLE_TENANT']);
-        $tenant->setPassword($this->passwordHasher->hashPassword($tenant, 'tenant123'));
-        $manager->persist($tenant);
+        // Create Tenant
+        $tenantUser = new Tenant();
+        $tenantUser->setEmail('tenant@example.com');
+        $tenantUser->setFirstName('Mike');
+        $tenantUser->setLastName('Tenant');
+        $tenantUser->setPhone('555-0103');
+        $tenantUser->setPassword($this->passwordHasher->hashPassword($tenantUser, 'password'));
+        $manager->persist($tenantUser);
+
+        // Create Property
+        $property = new Property();
+        $property->setAddress('123 Main Street');
+        $property->setCity('New York');
+        $property->setState('NY');
+        $property->setZipCode('10001');
+        $property->setMonthlyRent('2500.00');
+        $property->setBedrooms(3);
+        $property->setBathrooms(2);
+        $property->setSquareFeet(1500);
+        $property->setDescription('Beautiful apartment in downtown with great views.');
+        $property->setStatus('occupied');
+        $property->setOwner($ownerUser);
+        $property->setManager($managerUser);
+        $manager->persist($property);
+
+        // Create Lease
+        $lease = new Lease();
+        $lease->setStartDate(new \DateTime('2024-01-01'));
+        $lease->setEndDate(new \DateTime('2024-12-31'));
+        $lease->setMonthlyRent('2500.00');
+        $lease->setSecurityDeposit('2500.00');
+        $lease->setStatus('active');
+        $lease->setProperty($property);
+        $lease->setTenant($tenantUser);
+        $manager->persist($lease);
+
+        // Create another Property
+        $property2 = new Property();
+        $property2->setAddress('456 Oak Avenue');
+        $property2->setCity('Los Angeles');
+        $property2->setState('CA');
+        $property2->setZipCode('90210');
+        $property2->setMonthlyRent('3500.00');
+        $property2->setBedrooms(4);
+        $property2->setBathrooms(3);
+        $property2->setSquareFeet(2200);
+        $property2->setDescription('Spacious family home with pool and garden.');
+        $property2->setStatus('available');
+        $property2->setOwner($ownerUser);
+        $property2->setManager($managerUser);
+        $manager->persist($property2);
 
         $manager->flush();
-
-        // Create maintenance requests
-        $maintenanceRequest = new MaintenanceRequest();
-        $maintenanceRequest->setProperty($property1); // assuming you have properties
-        $maintenanceRequest->setTenant($tenant);
-        $maintenanceRequest->setTitle('Leaky faucet in kitchen');
-        $maintenanceRequest->setDescription('The kitchen faucet has been dripping constantly for the past week.');
-        $maintenanceRequest->setPriority('medium');
-        $maintenanceRequest->setStatus('submitted');
-        $manager->persist($maintenanceRequest);
-
-// Create payments
-        $payment = new Payment();
-        $payment->setLease($lease1); // assuming you have leases
-        $payment->setAmount('1500.00');
-        $payment->setDueDate(new \DateTime('first day of next month'));
-        $payment->setStatus('pending');
-        $manager->persist($payment);
     }
 }

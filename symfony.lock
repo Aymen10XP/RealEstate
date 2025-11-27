@@ -23,7 +23,7 @@
         ]
     },
     "doctrine/doctrine-migrations-bundle": {
-        "version": "3.5",
+        "version": "3.7",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -41,7 +41,7 @@
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "11.1",
-            "ref": "c6658a60fc9d594805370eacdf542c3d6b5c0869"
+            "ref": "1117deb12541f35793eec9fff7494d7aa12283fc"
         },
         "files": [
             "./.env.test",
@@ -90,7 +90,7 @@
         ]
     },
     "symfony/flex": {
-        "version": "2.8",
+        "version": "2.10",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -134,7 +134,7 @@
         ]
     },
     "symfony/maker-bundle": {
-        "version": "1.64",
+        "version": "1.65",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -148,7 +148,7 @@
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "6.0",
-            "ref": "ba1ac4e919baba5644d31b57a3284d6ba12d52ee"
+            "ref": "d8936e2e2230637ef97e5eecc0eea074eecae58b"
         },
         "files": [
             "./config/packages/messenger.yaml"
@@ -160,7 +160,7 @@
             "repo": "github.com/symfony/recipes",
             "branch": "main",
             "version": "3.7",
-            "ref": "aff23899c4440dd995907613c1dd709b6f59503f"
+            "ref": "1b9efb10c54cb51c713a9391c9300ff8bceda459"
         },
         "files": [
             "./config/packages/monolog.yaml"
@@ -205,7 +205,7 @@
         ]
     },
     "symfony/stimulus-bundle": {
-        "version": "2.30",
+        "version": "2.31",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -245,7 +245,7 @@
         ]
     },
     "symfony/ux-turbo": {
-        "version": "2.30",
+        "version": "2.31",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -279,7 +279,7 @@
         ]
     },
     "symfony/webapp-pack": {
-        "version": "1.3",
+        "version": "1.4",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
@@ -291,6 +291,6 @@
         ]
     },
     "twig/extra-bundle": {
-        "version": "v3.21.0"
+        "version": "v3.22.1"
     }
 }

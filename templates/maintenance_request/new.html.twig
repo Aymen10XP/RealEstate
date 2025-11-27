@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Maintenance Request{% endblock %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-tools"></i> New Maintenance Request
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form) }}
+                    <div class="row">
+                        <div class="col-md-12">
+                            {{ form_row(form.title, {
+                                'attr': {'class': 'form-control', 'placeholder': 'Enter a brief title for the issue'}
+                            }) }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.property, {
+                                'attr': {'class': 'form-control'}
+                            }) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.priority, {
+                                'attr': {'class': 'form-control'}
+                            }) }}
+                        </div>
+                    </div>
+
+                    {{ form_row(form.description, {
+                        'attr': {'class': 'form-control', 'rows': 6, 'placeholder': 'Describe the issue in detail...'}
+                    }) }}
+
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Submit Request
+                        </button>
+                        <a href="{{ path('app_maintenance_request_index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </a>
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

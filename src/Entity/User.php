@@ -1,5 +1,4 @@
 <?php
-// src/Entity/User.php
 
 namespace App\Entity;
 
@@ -11,7 +10,15 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+#[ORM\Table(name: '`user`')]
+#[ORM\InheritanceType('JOINED')]
+#[ORM\DiscriminatorColumn(name: 'type', type: 'string')]
+#[ORM\DiscriminatorMap([
+    'manager' => Manager::class,
+    'tenant' => Tenant::class,
+    'owner' => Owner::class,
+])]
+abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -24,6 +31,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private array $roles = [];
 
+    /**
+     * @var string The hashed password
+     */
     #[ORM\Column]
     private ?string $password = null;
 
@@ -36,24 +46,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 20)]
     private ?string $phone = null;
 
-    #[ORM\OneToMany(mappedBy: 'owner', targetEntity: Property::class)]
-    private Collection $properties;
-
-    #[ORM\OneToMany(mappedBy: 'tenant', targetEntity: Lease::class)]
-    private Collection $leases;
-
-    #[ORM\OneToMany(mappedBy: 'tenant', targetEntity: MaintenanceRequest::class)]
-    private Collection $maintenanceRequests;
-
-    #[ORM\OneToMany(mappedBy: 'assignedTo', targetEntity: MaintenanceRequest::class)]
-    private Collection $assignedMaintenanceRequests;
-
     public function __construct()
     {
-        $this->properties = new ArrayCollection();
-        $this->leases = new ArrayCollection();
-        $this->maintenanceRequests = new ArrayCollection();
-        $this->assignedMaintenanceRequests = new ArrayCollection();
+        $this->roles = ['ROLE_USER'];
     }
 
     public function getId(): ?int
@@ -69,6 +64,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
         return $this;
     }
 
@@ -97,6 +93,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
+
         return $this;
     }
 
@@ -111,6 +108,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
+
         return $this;
     }
 
@@ -131,6 +129,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setFirstName(string $firstName): static
     {
         $this->firstName = $firstName;
+
         return $this;
     }
 
@@ -142,6 +141,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setLastName(string $lastName): static
     {
         $this->lastName = $lastName;
+
         return $this;
     }
 
@@ -153,137 +153,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPhone(string $phone): static
     {
         $this->phone = $phone;
+
         return $this;
+    }
+
+    public function getFullName(): string
+    {
+        return $this->firstName . ' ' . $this->lastName;
     }
 
     /**
-     * @return Collection<int, Property>
+     * Returning a salt is only needed if you are not using a modern
+     * hashing algorithm (e.g. bcrypt or sodium) in your security.yaml.
+     *
+     * @see UserInterface
      */
-    public function getProperties(): Collection
+    public function getSalt(): ?string
     {
-        return $this->properties;
-    }
-
-    public function addProperty(Property $property): static
-    {
-        if (!$this->properties->contains($property)) {
-            $this->properties->add($property);
-            $property->setOwner($this);
-        }
-
-        return $this;
-    }
-
-    public function removeProperty(Property $property): static
-    {
-        if ($this->properties->removeElement($property)) {
-            // set the owning side to null (unless already changed)
-            if ($property->getOwner() === $this) {
-                $property->setOwner(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Lease>
-     */
-    public function getLeases(): Collection
-    {
-        return $this->leases;
-    }
-
-    public function addLease(Lease $lease): static
-    {
-        if (!$this->leases->contains($lease)) {
-            $this->leases->add($lease);
-            $lease->setTenant($this);
-        }
-
-        return $this;
-    }
-
-    public function removeLease(Lease $lease): static
-    {
-        if ($this->leases->removeElement($lease)) {
-            // set the owning side to null (unless already changed)
-            if ($lease->getTenant() === $this) {
-                $lease->setTenant(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, MaintenanceRequest>
-     */
-    public function getMaintenanceRequests(): Collection
-    {
-        return $this->maintenanceRequests;
-    }
-
-    public function addMaintenanceRequest(MaintenanceRequest $maintenanceRequest): static
-    {
-        if (!$this->maintenanceRequests->contains($maintenanceRequest)) {
-            $this->maintenanceRequests->add($maintenanceRequest);
-            $maintenanceRequest->setTenant($this);
-        }
-
-        return $this;
-    }
-
-    public function removeMaintenanceRequest(MaintenanceRequest $maintenanceRequest): static
-    {
-        if ($this->maintenanceRequests->removeElement($maintenanceRequest)) {
-            // set the owning side to null (unless already changed)
-            if ($maintenanceRequest->getTenant() === $this) {
-                $maintenanceRequest->setTenant(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, MaintenanceRequest>
-     */
-    public function getAssignedMaintenanceRequests(): Collection
-    {
-        return $this->assignedMaintenanceRequests;
-    }
-
-    public function addAssignedMaintenanceRequest(MaintenanceRequest $assignedMaintenanceRequest): static
-    {
-        if (!$this->assignedMaintenanceRequests->contains($assignedMaintenanceRequest)) {
-            $this->assignedMaintenanceRequests->add($assignedMaintenanceRequest);
-            $assignedMaintenanceRequest->setAssignedTo($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAssignedMaintenanceRequest(MaintenanceRequest $assignedMaintenanceRequest): static
-    {
-        if ($this->assignedMaintenanceRequests->removeElement($assignedMaintenanceRequest)) {
-            // set the owning side to null (unless already changed)
-            if ($assignedMaintenanceRequest->getAssignedTo() === $this) {
-                $assignedMaintenanceRequest->setAssignedTo(null);
-            }
-        }
-
-        return $this;
-    }
-
-    // For Symfony 4.4 compatibility
-    public function getUsername(): string
-    {
-        return $this->getUserIdentifier();
-    }
-
-    public function __toString(): string
-    {
-        return $this->firstName . ' ' . $this->lastName . ' (' . $this->email . ')';
+        return null;
     }
 }

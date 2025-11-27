@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Entity;
 
 use App\Repository\LeaseRepository;
@@ -17,14 +16,6 @@ class Lease
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'leases')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Property $property = null;
-
-    #[ORM\ManyToOne(inversedBy: 'leases')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $tenant = null;
-
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $startDate = null;
 
@@ -34,58 +25,31 @@ class Lease
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $monthlyRent = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $securityDeposit = null;
 
     #[ORM\Column(length: 20)]
     private ?string $status = 'active'; // active, expired, terminated
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $terms = null;
+    #[ORM\ManyToOne(inversedBy: 'leases')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Property $property = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $createdAt = null;
+    #[ORM\ManyToOne(inversedBy: 'leases')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Tenant $tenant = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $updatedAt = null;
-
-    #[ORM\OneToMany(mappedBy: 'lease', targetEntity: Payment::class)]
-    private $payments;
+    #[ORM\OneToMany(mappedBy: 'lease', targetEntity: RentPayment::class)]
+    private Collection $rentPayments;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
-        $this->updatedAt = new \DateTime();
-        $this->payments = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->rentPayments = new ArrayCollection();
     }
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getProperty(): ?Property
-    {
-        return $this->property;
-    }
-
-    public function setProperty(?Property $property): static
-    {
-        $this->property = $property;
-
-        return $this;
-    }
-
-    public function getTenant(): ?User
-    {
-        return $this->tenant;
-    }
-
-    public function setTenant(?User $tenant): static
-    {
-        $this->tenant = $tenant;
-
-        return $this;
     }
 
     public function getStartDate(): ?\DateTimeInterface
@@ -129,7 +93,7 @@ class Lease
         return $this->securityDeposit;
     }
 
-    public function setSecurityDeposit(?string $securityDeposit): static
+    public function setSecurityDeposit(string $securityDeposit): static
     {
         $this->securityDeposit = $securityDeposit;
 
@@ -148,100 +112,65 @@ class Lease
         return $this;
     }
 
-    public function getTerms(): ?string
+    public function getProperty(): ?Property
     {
-        return $this->terms;
+        return $this->property;
     }
 
-    public function setTerms(?string $terms): static
+    public function setProperty(?Property $property): static
     {
-        $this->terms = $terms;
+        $this->property = $property;
 
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getTenant(): ?Tenant
     {
-        return $this->createdAt;
+        return $this->tenant;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setTenant(?Tenant $tenant): static
     {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTimeInterface
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(\DateTimeInterface $updatedAt): static
-    {
-        $this->updatedAt = $updatedAt;
+        $this->tenant = $tenant;
 
         return $this;
     }
 
     /**
-     * @return Collection<int, Payment>
+     * @return Collection<int, RentPayment>
      */
-    public function getPayments(): Collection
+    public function getRentPayments(): Collection
     {
-        return $this->payments;
+        return $this->rentPayments;
     }
 
-    public function addPayment(Payment $payment): static
+    public function addRentPayment(RentPayment $rentPayment): static
     {
-        if (!$this->payments->contains($payment)) {
-            $this->payments->add($payment);
-            $payment->setLease($this);
+        if (!$this->rentPayments->contains($rentPayment)) {
+            $this->rentPayments->add($rentPayment);
+            $rentPayment->setLease($this);
         }
 
         return $this;
     }
 
-    public function removePayment(Payment $payment): static
+    public function removeRentPayment(RentPayment $rentPayment): static
     {
-        if ($this->payments->removeElement($payment)) {
+        if ($this->rentPayments->removeElement($rentPayment)) {
             // set the owning side to null (unless already changed)
-            if ($payment->getLease() === $this) {
-                $payment->setLease(null);
+            if ($rentPayment->getLease() === $this) {
+                $rentPayment->setLease(null);
             }
         }
 
         return $this;
     }
 
-    // Helper methods
     public function isActive(): bool
     {
-        return $this->status === 'active';
-    }
-
-    public function isExpired(): bool
-    {
-        return $this->endDate < new \DateTime();
-    }
-
-    public function getRemainingDays(): int
-    {
         $now = new \DateTime();
-        $interval = $now->diff($this->endDate);
-        return $interval->days;
-    }
-
-    public function getTotalValue(): string
-    {
-        $start = $this->startDate;
-        $end = $this->endDate;
-        $months = $start->diff($end)->m + ($start->diff($end)->y * 12);
-        return bcmul($this->monthlyRent, (string)$months, 2);
-    }
-
-    public function __toString(): string
-    {
-        return sprintf('Lease #%d - %s', $this->id, $this->property?->getAddress());
+        return $this->status === 'active' &&
+            $this->startDate <= $now &&
+            $this->endDate >= $now;
     }
 }

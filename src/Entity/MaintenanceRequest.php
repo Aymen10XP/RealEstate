@@ -14,46 +14,34 @@ class MaintenanceRequest
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'maintenanceRequests')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Property $property = null;
-
-    #[ORM\ManyToOne(inversedBy: 'maintenanceRequests')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $tenant = null;
-
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $description = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 20)]
     private ?string $priority = 'medium'; // low, medium, high, emergency
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 20)]
     private ?string $status = 'submitted'; // submitted, in_progress, completed, cancelled
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $updatedAt = null;
-
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $completedAt = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
-    private ?string $estimatedCost = null;
+    #[ORM\ManyToOne(inversedBy: 'maintenanceRequests')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Property $property = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
-    private ?string $actualCost = null;
+    #[ORM\ManyToOne(inversedBy: 'maintenanceRequests')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Tenant $tenant = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $notes = null;
-
-    #[ORM\ManyToOne]
-    private ?User $assignedTo = null;
+    #[ORM\ManyToOne(inversedBy: 'maintenanceRequests')]
+    private ?Manager $assignedManager = null;
 
     public function __construct()
     {
@@ -63,30 +51,6 @@ class MaintenanceRequest
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getProperty(): ?Property
-    {
-        return $this->property;
-    }
-
-    public function setProperty(?Property $property): static
-    {
-        $this->property = $property;
-
-        return $this;
-    }
-
-    public function getTenant(): ?User
-    {
-        return $this->tenant;
-    }
-
-    public function setTenant(?User $tenant): static
-    {
-        $this->tenant = $tenant;
-
-        return $this;
     }
 
     public function getTitle(): ?string
@@ -149,18 +113,6 @@ class MaintenanceRequest
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
     public function getCompletedAt(): ?\DateTimeInterface
     {
         return $this->completedAt;
@@ -173,69 +125,39 @@ class MaintenanceRequest
         return $this;
     }
 
-    public function getEstimatedCost(): ?string
+    public function getProperty(): ?Property
     {
-        return $this->estimatedCost;
+        return $this->property;
     }
 
-    public function setEstimatedCost(?string $estimatedCost): static
+    public function setProperty(?Property $property): static
     {
-        $this->estimatedCost = $estimatedCost;
+        $this->property = $property;
 
         return $this;
     }
 
-    public function getActualCost(): ?string
+    public function getTenant(): ?Tenant
     {
-        return $this->actualCost;
+        return $this->tenant;
     }
 
-    public function setActualCost(?string $actualCost): static
+    public function setTenant(?Tenant $tenant): static
     {
-        $this->actualCost = $actualCost;
+        $this->tenant = $tenant;
 
         return $this;
     }
 
-    public function getNotes(): ?string
+    public function getAssignedManager(): ?Manager
     {
-        return $this->notes;
+        return $this->assignedManager;
     }
 
-    public function setNotes(?string $notes): static
+    public function setAssignedManager(?Manager $assignedManager): static
     {
-        $this->notes = $notes;
+        $this->assignedManager = $assignedManager;
 
         return $this;
-    }
-
-    public function getAssignedTo(): ?User
-    {
-        return $this->assignedTo;
-    }
-
-    public function setAssignedTo(?User $assignedTo): static
-    {
-        $this->assignedTo = $assignedTo;
-
-        return $this;
-    }
-
-    // Helper methods
-    public function isUrgent(): bool
-    {
-        return $this->priority === 'high' || $this->priority === 'emergency';
-    }
-
-    public function getDaysOpen(): int
-    {
-        $now = new \DateTime();
-        $interval = $this->createdAt->diff($now);
-        return $interval->days;
-    }
-
-    public function __toString(): string
-    {
-        return sprintf('MR#%d - %s', $this->id, $this->title);
     }
 }
