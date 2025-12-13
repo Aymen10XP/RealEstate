@@ -2,6 +2,11 @@
 
 {% block title %}Owner Dashboard{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
 {% block body %}
     <div class="row">
         <div class="col-12">
@@ -68,6 +73,35 @@
                             <i class="fas fa-tools fa-2x"></i>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHART SECTION -->
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie"></i> Property Status Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="propertyStatusChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar"></i> Monthly Rental Income
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyRentChart" height="250"></canvas>
                 </div>
             </div>
         </div>
@@ -140,4 +174,196 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prepare chart data from PHP variables
+            const propertyStats = {
+                occupied: {{ properties|filter(p => p.status == 'occupied')|length }},
+                available: {{ properties|filter(p => p.status == 'available')|length }},
+                maintenance: {{ properties|filter(p => p.status == 'maintenance')|length }}
+            };
+
+            // Prepare monthly rent data
+            const monthlyRents = [];
+            const propertyLabels = [];
+
+            {% for property in properties %}
+            monthlyRents.push({{ property.monthlyRent }});
+            propertyLabels.push('{{ property.city|slice(0, 10) }}...');
+            {% endfor %}
+
+            // If no properties, create empty charts with messages
+            if ({{ properties|length }} === 0) {
+                createEmptyCharts();
+            } else {
+                // Property Status Pie Chart
+                const statusCtx = document.getElementById('propertyStatusChart').getContext('2d');
+                const propertyStatusChart = new Chart(statusCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Occupied', 'Available', 'Maintenance'],
+                        datasets: [{
+                            data: [
+                                propertyStats.occupied,
+                                propertyStats.available,
+                                propertyStats.maintenance
+                            ],
+                            backgroundColor: [
+                                '#0d6efd', // Primary blue
+                                '#198754', // Success green
+                                '#fd7e14'  // Warning orange
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${label}: ${value} properties (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Monthly Rent Bar Chart (only if we have properties)
+                if (monthlyRents.length > 0) {
+                    const rentCtx = document.getElementById('monthlyRentChart').getContext('2d');
+                    const monthlyRentChart = new Chart(rentCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: propertyLabels,
+                            datasets: [{
+                                label: 'Monthly Rent ($)',
+                                data: monthlyRents,
+                                backgroundColor: 'rgba(13, 110, 253, 0.7)',
+                                borderColor: '#0d6efd',
+                                borderWidth: 1,
+                                borderRadius: 5
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return '$' + value;
+                                        }
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        maxRotation: 45,
+                                        minRotation: 45
+                                    }
+                                }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return 'Rent: $' + context.parsed.y;
+                                        }
+                                    }
+                                },
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    // If no monthly rent data, hide the chart container
+                    document.getElementById('monthlyRentChart').parentElement.style.display = 'none';
+                }
+            }
+
+            function createEmptyCharts() {
+                const statusCtx = document.getElementById('propertyStatusChart').getContext('2d');
+                const propertyStatusChart = new Chart(statusCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['No Properties'],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: ['#e9ecef'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: false
+                            }
+                        }
+                    }
+                });
+
+                const rentCtx = document.getElementById('monthlyRentChart').getContext('2d');
+                const monthlyRentChart = new Chart(rentCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['No Data'],
+                        datasets: [{
+                            label: 'No Properties',
+                            data: [0],
+                            backgroundColor: 'rgba(233, 236, 239, 0.7)',
+                            borderColor: '#e9ecef',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 1,
+                                display: false
+                            },
+                            x: {
+                                display: false
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: false
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 {% endblock %}

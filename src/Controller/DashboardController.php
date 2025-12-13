@@ -52,7 +52,7 @@ class DashboardController extends AbstractController
 
         return $this->render('dashboard/manager.html.twig', [
             'properties' => $properties,
-            'maintenance_requests' => $maintenanceRequests, // Fixed variable name
+            'maintenance_requests' => $maintenanceRequests,
         ]);
     }
 
